@@ -1,13 +1,16 @@
 ---
 import type { GetStaticPaths } from "astro";
 import { Image } from "astro:assets";
-import { getCollection, type CollectionEntry} from "astro:content";
+// import { getCollection, type CollectionEntry} from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import Main from "../../components/Main.astro";
 import H1 from "../../components/H1.astro";
+import { getEntry } from "astro:content";
 
+// export const prerender = true // Add this for Static Site Generation 
+export const prerender = false // Add this for SSR
 
-// export const getStaticPaths = async () => {
+// export const getStaticPaths = (async () => {
 //     const posts = await getCollection("posts")
 
 //     const paths = posts.map(post => {
@@ -20,35 +23,26 @@ import H1 from "../../components/H1.astro";
 //             }
 //         }
 //     })
+//     return paths;
+// }) satisfies GetStaticPaths;
 
-//     return paths
+// type Props = {
+//     post: CollectionEntry<"posts">
 // }
 
-export const getStaticPaths = (async () => {
-    const posts = await getCollection("posts")
+// const {post} = Astro.props
 
-    const paths = posts.map(post => {
-        return {
-            params: {
-                slug: post.slug
-            },
-            props: {
-                post
-            }
-        }
-    })
-    return paths;
-}) satisfies GetStaticPaths;
+const {slug} = Astro.params
+const post = await getEntry("posts", slug as string)
 
-
-type Props = {
-    post: CollectionEntry<"posts">
+if(!post) {
+    return Astro.redirect('/404')
 }
-
-const {post} = Astro.props
 
 // Generate Content component for the post content in the markdown files using the render function provided by Astro
 const {Content} = await post.render() 
+
+
 ---
 
 <Layout title={post.data.title} >
